@@ -22,7 +22,7 @@ function varargout = PaintBot(varargin)
 
 % Edit the above text to modify the response to help PaintBot
 
-% Last Modified by GUIDE v2.5 26-Feb-2015 21:18:09
+% Last Modified by GUIDE v2.5 27-Feb-2015 14:35:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -58,12 +58,10 @@ handles.j3_theta = 0;
 handles.ee_x = 0;
 handles.ee_y = 0;
 handles.points = [];
-updateRobot(hObject, handles);
 % Choose default command line output for PaintBot
 handles.output = hObject;
 
-% Update handles structure
-guidata(hObject, handles);
+updateRobot(hObject, handles);
 
 % UIWAIT makes PaintBot wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -85,7 +83,7 @@ function j1_minus_Callback(hObject, eventdata, handles)
 % hObject    handle to j1_minus (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.j1_theta = handles.j1_theta + 1;
+handles.j1_theta = handles.j1_theta + 5;
 updateRobot(hObject, handles);
 
 
@@ -94,7 +92,7 @@ function j1_plus_Callback(hObject, eventdata, handles)
 % hObject    handle to j1_plus (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.j1_theta = handles.j1_theta - 1;
+handles.j1_theta = handles.j1_theta - 5;
 updateRobot(hObject, handles);
 
 
@@ -103,7 +101,7 @@ function j2_minus_Callback(hObject, eventdata, handles)
 % hObject    handle to j2_minus (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.j2_theta = handles.j2_theta + 1;
+handles.j2_theta = handles.j2_theta + 5;
 updateRobot(hObject, handles);
 
 
@@ -112,7 +110,7 @@ function j2_plus_Callback(hObject, eventdata, handles)
 % hObject    handle to j2_plus (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.j2_theta = handles.j2_theta - 1;
+handles.j2_theta = handles.j2_theta - 5;
 updateRobot(hObject, handles);
 
 
@@ -121,7 +119,7 @@ function j3_minus_Callback(hObject, eventdata, handles)
 % hObject    handle to j3_minus (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.j3_theta = handles.j3_theta + 1;
+handles.j3_theta = handles.j3_theta + 5;
 updateRobot(hObject, handles);
 
 
@@ -130,7 +128,7 @@ function j3_plus_Callback(hObject, eventdata, handles)
 % hObject    handle to j3_plus (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.j3_theta = handles.j3_theta - 1;
+handles.j3_theta = handles.j3_theta - 5;
 updateRobot(hObject, handles);
 
 % --- Executes on button press in paint.
@@ -158,8 +156,15 @@ arm3_length = .075;
 
 axes(handles.axes1);
 hold off
+%draw all painted points
+for i = 1:size(handles.points,1)
+    %draw circle diameter 10px (.01) at i,j
+    generate_Circle(handles.points(i,1),handles.points(i,2),.01,'black');
+    hold on
+end
 arm1 = generate_Arm(.05,arm1_length,'r');
 hold on
+generate_Circle(.5,0,.025,'c'); %joint circle
 arm2 = generate_Arm(.05,arm2_length,'b');
 arm3 = generate_Arm(.05,arm3_length,'g');
 
@@ -171,12 +176,14 @@ rotate(arm1,[0 0 1],handles.j1_theta,[.5 0 0]);
 %arm 2
 a2_x = -sind(handles.j1_theta) * (arm1_length*2) + .5;
 a2_y = cosd(handles.j1_theta) * (arm1_length*2);
+generate_Circle(a2_x,a2_y,.02,'c'); %joint circle
 set(arm2,'XData',get(arm2,'XData')+a2_x);
 set(arm2,'YData',get(arm2,'Ydata')+a2_y + arm2_length);
 rotate(arm2,[0 0 1],handles.j2_theta,[a2_x a2_y 0]);
 %arm 3
 a3_x = a2_x - sind(handles.j2_theta) * (arm2_length*2);
 a3_y = a2_y + cosd(handles.j2_theta) * (arm2_length*2);
+generate_Circle(a3_x,a3_y,.015,'c'); %joint circle
 set(arm3,'XData',get(arm3,'XData')+a3_x);
 set(arm3,'YData',get(arm3,'Ydata')+a3_y + arm3_length);
 rotate(arm3,[0 0 1],handles.j3_theta,[a3_x a3_y 0]);
@@ -185,15 +192,6 @@ rotate(arm3,[0 0 1],handles.j3_theta,[a3_x a3_y 0]);
 handles.ee_x = a3_x - sind(handles.j3_theta) * (arm3_length*2);
 handles.ee_y = a3_y + cosd(handles.j3_theta) * (arm3_length*2);
 
-%draw all painted points
-for i = 1:size(handles.points,1)
-    %draw circle radius 10px (.01) at i,j
-    r = .01;
-    angle = 0:0.01:2*pi;
-    xp = r * cos(angle);
-    yp = r * sin(angle);
-    fill(handles.points(i,1) + xp, handles.points(i,2) + yp, 'black');
-end
 
 %clean up axes
 set(handles.axes1,'XTick',[],'YTick',[])
@@ -219,4 +217,12 @@ Y = (a*cosalpha*sinbeta+b*sinalpha*cosbeta);
 h = fill(X,Y,c);
 set(h,'FaceAlpha',0.75')
 
-
+function h = generate_Circle(x,y,r,c)
+%x = x loc
+%y = y loc
+%r = radius
+%c = color
+angle = 0:0.01:2*pi;
+xp = r * cos(angle);
+yp = r * sin(angle);
+h = fill(x + xp, y + yp, c);
