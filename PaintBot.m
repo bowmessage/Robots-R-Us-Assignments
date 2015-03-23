@@ -43,6 +43,14 @@ else
 end
 % End initialization code - DO NOT EDIT
 
+function OperateOnKeyPress(hObject, evt)
+if strcmp(evt.Key,'leftarrow')
+elseif strcmp(evt.Key,'rightarrow')
+elseif strcmp(evt.Key,'downarrow')
+elseif strcmp(evt.Key,'uparrow')
+end
+disp(evt.Key)
+
 
 % --- Executes just before PaintBot is made visible.
 function PaintBot_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -60,6 +68,9 @@ handles.ee_y = 0;
 handles.points = [];
 % Choose default command line output for PaintBot
 handles.output = hObject;
+
+%setup key bindings
+set(hObject,'KeyPressFcn', @OperateOnKeyPress);
 
 updateRobot(hObject, handles);
 
@@ -136,10 +147,7 @@ function x_minus_Callback(hObject, eventdata, handles)
 % hObject    handle to x_minus (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-r = sqrt((handles.ee_x-1)^2 + (handles.ee_y)^2);
-azimuth = atan2((handles.ee_y),(handles.ee_x-1));
-inverseKine(r, azimuth, hObject, handles);
+inverseKine(handles.ee_x-.01, handles.ee_y, hObject, handles);
 
 
 % --- Executes on button press in x_plus.
@@ -147,9 +155,7 @@ function x_plus_Callback(hObject, eventdata, handles)
 % hObject    handle to x_plus (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-r = sqrt((handles.ee_x+1)^2 + (handles.ee_y)^2);
-azimuth = atan2((handles.ee_y),(handles.ee_x+1));
-inverseKine(r, azimuth, hObject, handles);
+inverseKine(handles.ee_x+.01, handles.ee_y, hObject, handles);
 
 
 % --- Executes on button press in y_minus.
@@ -157,9 +163,7 @@ function y_minus_Callback(hObject, eventdata, handles)
 % hObject    handle to y_minus (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-r = sqrt((handles.ee_x)^2 + (handles.ee_y-1)^2);
-azimuth = atan2((handles.ee_y-1),(handles.ee_x));
-inverseKine(r, azimuth, hObject, handles);
+inverseKine(handles.ee_x, handles.ee_y-.01, hObject, handles);
 
 
 % --- Executes on button press in y_plus.
@@ -167,9 +171,7 @@ function y_plus_Callback(hObject, eventdata, handles)
 % hObject    handle to y_plus (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-r = sqrt((handles.ee_x)^2 + (handles.ee_y+1)^2);
-azimuth = atan2((handles.ee_y+1),(handles.ee_x));
-inverseKine(r, azimuth, hObject, handles);
+inverseKine(handles.ee_x, handles.ee_y+.01, hObject, handles);
 
 % --- Executes on button press in paint.
 function paint_Callback(hObject, eventdata, handles)
@@ -230,7 +232,7 @@ rotate(arm3,[0 0 1],handles.j1_theta + handles.j2_theta + handles.j3_theta,[a3_x
 
 %set handle for end effector position (for painting)
 handles.ee_x = a3_x - sind(handles.j1_theta + handles.j2_theta + handles.j3_theta) * (arm3_length*2);
-handles.ee_y = a3_y + cosd(handles.j1_theta + handles.j2_theta + handles.j3_theta) * (arm3_length*2);
+handles.ee_y = a3_y + cosd(handles.j1_theta + handles.j2_theta + handles.j3_theta) * (arm3_length*2)
 
 
 %clean up axes
@@ -242,7 +244,7 @@ set(handles.axes1,'Ylim',[0,1]);
 guidata(hObject, handles);
 
 % Link angle calculation
-function inverseKine(r, azimuth,hObject, handles)
+function inverseKine(x,y,hObject, handles)
 % Input is the polar coordinates of end effector's position.
 %
 % In order to use this function, you'll need to convert the end
@@ -251,19 +253,27 @@ function inverseKine(r, azimuth,hObject, handles)
 % These can be calculated as such: r = sqrt(x^2+y^2) and azimuth = atan2(y,x).
 %
 
+x
+y
+
 l1 = .15;
 l2 = .10;
 l3 = .075;
 
-sinA = sqrt((3*l3-l1) / (8*l3) + sqrt(((3*l3-l1) / (8*l3))^2 - (l3^2 - r^2) / (16*l1*l3)));
-a = asin(sinA);
-d = 2 * l1 * sinA;
-b = acos((r^2+d^2-l3^2) / (2*r*d));
-s = sign(psi - pi / 2);
+c_theta_2 = (x^2 + y^2 - l1^2 - l2^2)/(2*l1*l2);
+s_theta_2 = sqrt(1-c_theta_2^2);
+k1 = l1 + l2*c_theta_2;
+k2 = l2*s_theta_2;
+phi = atan2d(y,x);
 
-handles.j1_theta =(psi-pi/2-s * (pi/2-a+b)) * 180/pi;
-handles.j2_theta = s * (pi-2*a) * 180/pi;
-handles.j3_theta = s * (pi-2*a) * 180/pi;
+handles.j2_theta = atan2d(s_theta_2,c_theta_2);
+
+xn = x - l3*cosd(phi);
+yn = y - l3*sind(phi);
+
+handles.j1_theta = atan2d((k1*yn - k2*xn), (k1*xn - k2*yn));
+handles.j3_theta = phi - (handles.j1_theta + handles.j2_theta);
+
 updateRobot(hObject,handles);
 
 %builds ellipse, must use Set and Rotate to position and rotate afterwards.
