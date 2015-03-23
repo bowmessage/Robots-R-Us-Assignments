@@ -179,18 +179,18 @@ a2_y = cosd(handles.j1_theta) * (arm1_length*2);
 generate_Circle(a2_x,a2_y,.02,'c'); %joint circle
 set(arm2,'XData',get(arm2,'XData')+a2_x);
 set(arm2,'YData',get(arm2,'Ydata')+a2_y + arm2_length);
-rotate(arm2,[0 0 1],handles.j2_theta,[a2_x a2_y 0]);
+rotate(arm2,[0 0 1],handles.j1_theta + handles.j2_theta,[a2_x a2_y 0]);
 %arm 3
-a3_x = a2_x - sind(handles.j2_theta) * (arm2_length*2);
-a3_y = a2_y + cosd(handles.j2_theta) * (arm2_length*2);
+a3_x = a2_x - sind(handles.j1_theta + handles.j2_theta) * (arm2_length*2);
+a3_y = a2_y + cosd(handles.j1_theta + handles.j2_theta) * (arm2_length*2);
 generate_Circle(a3_x,a3_y,.015,'c'); %joint circle
 set(arm3,'XData',get(arm3,'XData')+a3_x);
 set(arm3,'YData',get(arm3,'Ydata')+a3_y + arm3_length);
-rotate(arm3,[0 0 1],handles.j3_theta,[a3_x a3_y 0]);
+rotate(arm3,[0 0 1],handles.j1_theta + handles.j2_theta + handles.j3_theta,[a3_x a3_y 0]);
 
 %set handle for end effector position (for painting)
-handles.ee_x = a3_x - sind(handles.j3_theta) * (arm3_length*2);
-handles.ee_y = a3_y + cosd(handles.j3_theta) * (arm3_length*2);
+handles.ee_x = a3_x - sind(handles.j1_theta + handles.j2_theta + handles.j3_theta) * (arm3_length*2);
+handles.ee_y = a3_y + cosd(handles.j1_theta + handles.j2_theta + handles.j3_theta) * (arm3_length*2);
 
 
 %clean up axes
