@@ -43,6 +43,14 @@ else
 end
 % End initialization code - DO NOT EDIT
 
+function OperateOnKeyPress(hObject, evt)
+if strcmp(evt.Key,'leftarrow')
+elseif strcmp(evt.Key,'rightarrow')
+elseif strcmp(evt.Key,'downarrow')
+elseif strcmp(evt.Key,'uparrow')
+end
+disp(evt.Key)
+
 
 % --- Executes just before PaintBot is made visible.
 function PaintBot_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -60,6 +68,9 @@ handles.ee_y = 0;
 handles.points = [];
 % Choose default command line output for PaintBot
 handles.output = hObject;
+
+%setup key bindings
+set(hObject,'KeyPressFcn', @OperateOnKeyPress);
 
 updateRobot(hObject, handles);
 
@@ -242,7 +253,7 @@ set(handles.axes1,'Ylim',[0,1]);
 guidata(hObject, handles);
 
 % Link angle calculation
-function inverseKine(r, azimuth,hObject, handles)
+function inverseKine(hObject, handles)
 % Input is the polar coordinates of end effector's position.
 %
 % In order to use this function, you'll need to convert the end
@@ -254,6 +265,7 @@ function inverseKine(r, azimuth,hObject, handles)
 l1 = .15;
 l2 = .10;
 l3 = .075;
+
 
 sinA = sqrt((3*l3-l1) / (8*l3) + sqrt(((3*l3-l1) / (8*l3))^2 - (l3^2 - r^2) / (16*l1*l3)));
 a = asin(sinA);
