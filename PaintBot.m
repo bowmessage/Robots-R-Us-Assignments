@@ -147,7 +147,7 @@ function x_minus_Callback(hObject, eventdata, handles)
 % hObject    handle to x_minus (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-inverseKine(handles.ee_x-.01, handles.ee_y, hObject, handles);
+inverseKine(handles.a3_x-.01, handles.a3_y, hObject, handles);
 
 
 % --- Executes on button press in x_plus.
@@ -155,7 +155,7 @@ function x_plus_Callback(hObject, eventdata, handles)
 % hObject    handle to x_plus (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-inverseKine(handles.ee_x+.01, handles.ee_y, hObject, handles);
+inverseKine(handles.a3_x+.01, handles.a3_y, hObject, handles);
 
 
 % --- Executes on button press in y_minus.
@@ -163,7 +163,7 @@ function y_minus_Callback(hObject, eventdata, handles)
 % hObject    handle to y_minus (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-inverseKine(handles.ee_x, handles.ee_y-.01, hObject, handles);
+inverseKine(handles.a3_x, handles.a3_y-.01, hObject, handles);
 
 
 % --- Executes on button press in y_plus.
@@ -171,7 +171,7 @@ function y_plus_Callback(hObject, eventdata, handles)
 % hObject    handle to y_plus (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-inverseKine(handles.ee_x, handles.ee_y+.01, hObject, handles);
+inverseKine(handles.a3_x, handles.a3_y+.01, hObject, handles);
 
 % --- Executes on button press in paint.
 function paint_Callback(hObject, eventdata, handles)
@@ -233,7 +233,8 @@ rotate(arm3,[0 0 1],handles.j1_theta + handles.j2_theta + handles.j3_theta,[a3_x
 %set handle for end effector position (for painting)
 handles.ee_x = a3_x - sind(handles.j1_theta + handles.j2_theta + handles.j3_theta) * (arm3_length*2);
 handles.ee_y = a3_y + cosd(handles.j1_theta + handles.j2_theta + handles.j3_theta) * (arm3_length*2)
-
+handles.a3_x = a3_x
+handles.a3_y = a3_y
 
 %clean up axes
 set(handles.axes1,'XTick',[],'YTick',[])
@@ -253,26 +254,32 @@ function inverseKine(x,y,hObject, handles)
 % These can be calculated as such: r = sqrt(x^2+y^2) and azimuth = atan2(y,x).
 %
 
+x = x - 0.5;
 x
 y
 
-l1 = .15;
-l2 = .10;
-l3 = .075;
+l1 = 2*.15;
+l2 = 2*.10;
+l3 = 2*.075;
 
-c_theta_2 = (x^2 + y^2 - l1^2 - l2^2)/(2*l1*l2);
-s_theta_2 = sqrt(1-c_theta_2^2);
+c_theta_2 = real((x^2 + y^2 - l1^2 - l2^2)/(2*l1*l2));
+s_theta_2 = real(sqrt(1-c_theta_2^2));
 k1 = l1 + l2*c_theta_2;
 k2 = l2*s_theta_2;
-phi = atan2d(y,x);
+phi = 90;%atan2(y,x);
 
 handles.j2_theta = atan2d(s_theta_2,c_theta_2);
 
-xn = x - l3*cosd(phi);
-yn = y - l3*sind(phi);
+%xn = x - l3*cos(phi);
+%yn = y - l3*sin(phi);
+xn = x
+yn = y
+xn
+yn
 
-handles.j1_theta = atan2d((k1*yn - k2*xn), (k1*xn - k2*yn));
-handles.j3_theta = phi - (handles.j1_theta + handles.j2_theta);
+%handles.j1_theta = atan2d((k1*yn - k2*xn), (k1*xn - k2*yn)) - 90;
+handles.j1_theta = atan2d(y,x) - atan2d(k2,k1) - 90;
+handles.j3_theta = phi - (handles.j1_theta + handles.j2_theta) - 90;
 
 updateRobot(hObject,handles);
 
