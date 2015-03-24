@@ -206,15 +206,15 @@ for i = 1:size(handles.points,1)
 end
 arm1 = generate_Arm(.05,arm1_length,'r');
 hold on
-generate_Circle(.5,0,.025,'c'); %joint circle
+generate_Circle(.5,0,.025,'c'); 
 arm2 = generate_Arm(.05,arm2_length,'b');
 arm3 = generate_Arm(.05,arm3_length,'g');
 
 %Set positions and Rotations
 %arm 1 base always gets set to X=.5, Y=0
 set(arm1,'XData',get(arm1,'XData')+.5);
-set(arm1,'YData',get(arm1,'YData')+arm1_length);
-rotate(arm1,[0 0 1],handles.j1_theta,[.5 0 0]);
+set(arm1,'YData',get(arm1,'YData') + arm1_length); 
+rotate(arm1,[0 0 1],handles.j1_theta,[.5 0 0]);    
 %arm 2
 a2_x = -sind(handles.j1_theta) * (arm1_length*2) + .5;
 a2_y = cosd(handles.j1_theta) * (arm1_length*2);
@@ -233,9 +233,8 @@ rotate(arm3,[0 0 1],handles.j1_theta + handles.j2_theta + handles.j3_theta,[a3_x
 %set handle for end effector position (for painting)
 handles.ee_x = a3_x - sind(handles.j1_theta + handles.j2_theta + handles.j3_theta) * (arm3_length*2);
 handles.ee_y = a3_y + cosd(handles.j1_theta + handles.j2_theta + handles.j3_theta) * (arm3_length*2)
-handles.a3_x = a3_x
-handles.a3_y = a3_y
-
+handles.a3_x = a3_x;
+handles.a3_y = a3_y;
 %clean up axes
 set(handles.axes1,'XTick',[],'YTick',[])
 axis equal
@@ -254,13 +253,16 @@ function inverseKine(x,y,hObject, handles)
 % These can be calculated as such: r = sqrt(x^2+y^2) and azimuth = atan2(y,x).
 %
 
-x = x - 0.5;
-x
+x = x - 0.5
 y
 
-l1 = 2*.15;
-l2 = 2*.10;
-l3 = 2*.075;
+l1 = .15 * 2;
+l2 = .10 * 2;
+l3 = .075 * 2;
+
+if(x/cosd(atan2d(y,x)) > l1+l2)
+    return;
+end
 
 c_theta_2 = real((x^2 + y^2 - l1^2 - l2^2)/(2*l1*l2));
 s_theta_2 = real(sqrt(1-c_theta_2^2));
@@ -270,15 +272,9 @@ phi = 90;%atan2(y,x);
 
 handles.j2_theta = atan2d(s_theta_2,c_theta_2);
 
-%xn = x - l3*cos(phi);
-%yn = y - l3*sin(phi);
-xn = x
-yn = y
-xn
-yn
-
-%handles.j1_theta = atan2d((k1*yn - k2*xn), (k1*xn - k2*yn)) - 90;
 handles.j1_theta = atan2d(y,x) - atan2d(k2,k1) - 90;
+
+
 handles.j3_theta = phi - (handles.j1_theta + handles.j2_theta) - 90;
 
 updateRobot(hObject,handles);

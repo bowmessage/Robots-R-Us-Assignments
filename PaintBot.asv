@@ -22,7 +22,7 @@ function varargout = PaintBot(varargin)
 
 % Edit the above text to modify the response to help PaintBot
 
-% Last Modified by GUIDE v2.5 27-Feb-2015 14:35:09
+% Last Modified by GUIDE v2.5 23-Mar-2015 16:52:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -43,6 +43,14 @@ else
 end
 % End initialization code - DO NOT EDIT
 
+function OperateOnKeyPress(hObject, evt)
+if strcmp(evt.Key,'leftarrow')
+elseif strcmp(evt.Key,'rightarrow')
+elseif strcmp(evt.Key,'downarrow')
+elseif strcmp(evt.Key,'uparrow')
+end
+disp(evt.Key)
+
 
 % --- Executes just before PaintBot is made visible.
 function PaintBot_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -60,6 +68,9 @@ handles.ee_y = 0;
 handles.points = [];
 % Choose default command line output for PaintBot
 handles.output = hObject;
+
+%setup key bindings
+set(hObject,'KeyPressFcn', @OperateOnKeyPress);
 
 updateRobot(hObject, handles);
 
@@ -131,6 +142,37 @@ function j3_plus_Callback(hObject, eventdata, handles)
 handles.j3_theta = handles.j3_theta - 5;
 updateRobot(hObject, handles);
 
+% --- Executes on button press in x_minus.
+function x_minus_Callback(hObject, eventdata, handles)
+% hObject    handle to x_minus (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+inverseKine(handles.a3_x-.01, handles.a3_y, hObject, handles);
+
+
+% --- Executes on button press in x_plus.
+function x_plus_Callback(hObject, eventdata, handles)
+% hObject    handle to x_plus (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+inverseKine(handles.a3_x+.01, handles.a3_y, hObject, handles);
+
+
+% --- Executes on button press in y_minus.
+function y_minus_Callback(hObject, eventdata, handles)
+% hObject    handle to y_minus (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+inverseKine(handles.a3_x, handles.a3_y-.01, hObject, handles);
+
+
+% --- Executes on button press in y_plus.
+function y_plus_Callback(hObject, eventdata, handles)
+% hObject    handle to y_plus (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+inverseKine(handles.a3_x, handles.a3_y+.01, hObject, handles);
+
 % --- Executes on button press in paint.
 function paint_Callback(hObject, eventdata, handles)
 % hObject    handle to paint (see GCBO)
@@ -156,36 +198,43 @@ arm3_length = .075;
 
 axes(handles.axes1);
 hold off
+%draw all painted points
+for i = 1:size(handles.points,1)
+    %draw circle diameter 10px (.01) at i,j
+    generate_Circle(handles.points(i,1),handles.points(i,2),.01,'black');
+    hold on
+end
 arm1 = generate_Arm(.05,arm1_length,'r');
 hold on
-generate_Circle(.5,0,.025,'c'); %joint circle
+generate_Circle(.5,0,.025,'c'); 
 arm2 = generate_Arm(.05,arm2_length,'b');
 arm3 = generate_Arm(.05,arm3_length,'g');
 
 %Set positions and Rotations
 %arm 1 base always gets set to X=.5, Y=0
 set(arm1,'XData',get(arm1,'XData')+.5);
-set(arm1,'YData',get(arm1,'YData')+arm1_length);
-rotate(arm1,[0 0 1],handles.j1_theta,[.5 0 0]);
+set(arm1,'YData',get(arm1,'YData') + arm1_length); 
+rotate(arm1,[0 0 1],handles.j1_theta,[.5 0 0]);    
 %arm 2
 a2_x = -sind(handles.j1_theta) * (arm1_length*2) + .5;
 a2_y = cosd(handles.j1_theta) * (arm1_length*2);
 generate_Circle(a2_x,a2_y,.02,'c'); %joint circle
 set(arm2,'XData',get(arm2,'XData')+a2_x);
 set(arm2,'YData',get(arm2,'Ydata')+a2_y + arm2_length);
-rotate(arm2,[0 0 1],handles.j2_theta,[a2_x a2_y 0]);
+rotate(arm2,[0 0 1],handles.j1_theta + handles.j2_theta,[a2_x a2_y 0]);
 %arm 3
-a3_x = a2_x - sind(handles.j2_theta) * (arm2_length*2);
-a3_y = a2_y + cosd(handles.j2_theta) * (arm2_length*2);
+a3_x = a2_x - sind(handles.j1_theta + handles.j2_theta) * (arm2_length*2);
+a3_y = a2_y + cosd(handles.j1_theta + handles.j2_theta) * (arm2_length*2);
 generate_Circle(a3_x,a3_y,.015,'c'); %joint circle
 set(arm3,'XData',get(arm3,'XData')+a3_x);
 set(arm3,'YData',get(arm3,'Ydata')+a3_y + arm3_length);
-rotate(arm3,[0 0 1],handles.j3_theta,[a3_x a3_y 0]);
+rotate(arm3,[0 0 1],handles.j1_theta + handles.j2_theta + handles.j3_theta,[a3_x a3_y 0]);
 
 %set handle for end effector position (for painting)
-handles.ee_x = a3_x - sind(handles.j3_theta) * (arm3_length*2);
-handles.ee_y = a3_y + cosd(handles.j3_theta) * (arm3_length*2);
-
+handles.ee_x = a3_x - sind(handles.j1_theta + handles.j2_theta + handles.j3_theta) * (arm3_length*2);
+handles.ee_y = a3_y + cosd(handles.j1_theta + handles.j2_theta + handles.j3_theta) * (arm3_length*2)
+handles.a3_x = a3_x;
+handles.a3_y = a3_y;
 %clean up axes
 set(handles.axes1,'XTick',[],'YTick',[])
 axis equal
@@ -193,6 +242,40 @@ set(handles.axes1,'Xlim',[0,1]);
 set(handles.axes1,'Ylim',[0,1]);
 % Update handles structure
 guidata(hObject, handles);
+
+% Link angle calculation
+function inverseKine(x,y,hObject, handles)
+% Input is the polar coordinates of end effector's position.
+%
+% In order to use this function, you'll need to convert the end
+% effector's position to spherical coordinates. All you'll need
+% is r (distance from origin to point and azimuth (angular direction).
+% These can be calculated as such: r = sqrt(x^2+y^2) and azimuth = atan2(y,x).
+%
+
+x = x - 0.5;
+y
+
+if(abs(x) > 
+
+l1 = .15 * 2;
+l2 = .10 * 2;
+l3 = .075 * 2;
+
+c_theta_2 = real((x^2 + y^2 - l1^2 - l2^2)/(2*l1*l2));
+s_theta_2 = real(sqrt(1-c_theta_2^2));
+k1 = l1 + l2*c_theta_2;
+k2 = l2*s_theta_2;
+phi = 90;%atan2(y,x);
+
+handles.j2_theta = atan2d(s_theta_2,c_theta_2);
+
+handles.j1_theta = atan2d(y,x) - atan2d(k2,k1) - 90;
+
+
+handles.j3_theta = phi - (handles.j1_theta + handles.j2_theta) - 90;
+
+updateRobot(hObject,handles);
 
 %builds ellipse, must use Set and Rotate to position and rotate afterwards.
 function h = generate_Arm(a,b,c)
