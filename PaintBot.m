@@ -232,7 +232,7 @@ rotate(arm3,[0 0 1],handles.j1_theta + handles.j2_theta + handles.j3_theta,[a3_x
 
 %set handle for end effector position (for painting)
 handles.ee_x = a3_x - sind(handles.j1_theta + handles.j2_theta + handles.j3_theta) * (arm3_length*2);
-handles.ee_y = a3_y + cosd(handles.j1_theta + handles.j2_theta + handles.j3_theta) * (arm3_length*2)
+handles.ee_y = a3_y + cosd(handles.j1_theta + handles.j2_theta + handles.j3_theta) * (arm3_length*2);
 handles.a3_x = a3_x;
 handles.a3_y = a3_y;
 %clean up axes
@@ -253,8 +253,8 @@ function inverseKine(x,y,hObject, handles)
 % These can be calculated as such: r = sqrt(x^2+y^2) and azimuth = atan2(y,x).
 %
 
-x = x - 0.5
-y
+x = x - 0.5;
+y;
 
 l1 = .15 * 2;
 l2 = .10 * 2;
