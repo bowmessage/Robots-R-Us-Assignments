@@ -22,7 +22,7 @@ function varargout = PaintBot(varargin)
 
 % Edit the above text to modify the response to help PaintBot
 
-% Last Modified by GUIDE v2.5 27-Mar-2015 22:15:09
+% Last Modified by GUIDE v2.5 28-Mar-2015 12:22:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -312,12 +312,14 @@ function connect_button_Callback(hObject, eventdata, handles)
 % hObject    handle to connect_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-popupvalue = get(handles.popupmenu,'Value')
-32 + 32
+popupvalue = get(handles.popupmenu,'Value');
 if(popupvalue == 1)%master
-    
+    startServer(3000)
 elseif(popupvalue == 2)%slave
-    data = client('localhost', 3000)
+    %data = client('localhost', 3000);
+    startClient('localhost',3000);
+    data = readMessage();
+    closeClient();
 end
 
 
@@ -331,10 +333,11 @@ function popupmenu_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from popupmenu
 popupvalue = get(hObject,'Value');
 if(popupvalue == 1)%master
-    set(handles.connect_button,'Enable','off');
+    %set(handles.connect_button,'Enable','off');
     set(handles.ipaddress,'Enable','off');
 elseif(popupvalue == 2)%slave
-    set(handles.connect_button,'Enable','on');
+    closeServer();
+    %set(handles.connect_button,'Enable','on');
     set(handles.ipaddress,'Enable','on');
 end
 
