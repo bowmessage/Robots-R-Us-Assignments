@@ -22,7 +22,7 @@ function varargout = PaintBot(varargin)
 
 % Edit the above text to modify the response to help PaintBot
 
-% Last Modified by GUIDE v2.5 23-Mar-2015 16:52:40
+% Last Modified by GUIDE v2.5 27-Mar-2015 22:15:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -42,6 +42,7 @@ else
     gui_mainfcn(gui_State, varargin{:});
 end
 % End initialization code - DO NOT EDIT
+
 
 function OperateOnKeyPress(hObject, evt)
 if strcmp(evt.Key,'leftarrow')
@@ -304,3 +305,70 @@ angle = 0:0.01:2*pi;
 xp = r * cos(angle);
 yp = r * sin(angle);
 h = fill(x + xp, y + yp, c);
+
+
+% --- Executes on button press in connect_button.
+function connect_button_Callback(hObject, eventdata, handles)
+% hObject    handle to connect_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+popupvalue = get(handles.popupmenu,'Value')
+32 + 32
+if(popupvalue == 1)%master
+    
+elseif(popupvalue == 2)%slave
+    data = client('localhost', 3000)
+end
+
+
+% --- Executes on selection change in popupmenu.
+function popupmenu_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmenu
+popupvalue = get(hObject,'Value');
+if(popupvalue == 1)%master
+    set(handles.connect_button,'Enable','off');
+    set(handles.ipaddress,'Enable','off');
+elseif(popupvalue == 2)%slave
+    set(handles.connect_button,'Enable','on');
+    set(handles.ipaddress,'Enable','on');
+end
+
+% --- Executes during object creation, after setting all properties.
+function popupmenu_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function ipaddress_Callback(hObject, eventdata, handles)
+% hObject    handle to ipaddress (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of ipaddress as text
+%        str2double(get(hObject,'String')) returns contents of ipaddress as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function ipaddress_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ipaddress (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
