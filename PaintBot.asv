@@ -343,7 +343,7 @@ elseif(popupvalue == 2)%slave
                     start(t);
                 end
             end
-            data = data_arr(size(data_arr));
+            data = data_arr(size(data_arr)
         end
         pause(.01);
     end
