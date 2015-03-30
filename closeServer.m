@@ -1,4 +1,7 @@
 function closeServer()
+
+import java.net.ServerSocket
+import java.io.*
 global output_socket server_socket;
 try
     server_socket.close;

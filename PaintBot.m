@@ -97,6 +97,7 @@ function j1_minus_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.j1_theta = handles.j1_theta + 5;
 updateRobot(hObject, handles);
+writeMessage('j1minus');
 
 
 % --- Executes on button press in j1_plus.
@@ -106,6 +107,7 @@ function j1_plus_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.j1_theta = handles.j1_theta - 5;
 updateRobot(hObject, handles);
+writeMessage('j1plus');
 
 
 % --- Executes on button press in j2_minus.
@@ -115,6 +117,7 @@ function j2_minus_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.j2_theta = handles.j2_theta + 5;
 updateRobot(hObject, handles);
+writeMessage('j2minus');
 
 
 % --- Executes on button press in j2_plus.
@@ -124,6 +127,7 @@ function j2_plus_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.j2_theta = handles.j2_theta - 5;
 updateRobot(hObject, handles);
+writeMessage('j2plus');
 
 
 % --- Executes on button press in j3_minus.
@@ -133,6 +137,7 @@ function j3_minus_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.j3_theta = handles.j3_theta + 5;
 updateRobot(hObject, handles);
+writeMessage('j3minus');
 
 
 % --- Executes on button press in j3_plus.
@@ -142,6 +147,7 @@ function j3_plus_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.j3_theta = handles.j3_theta - 5;
 updateRobot(hObject, handles);
+writeMessage('j3plus');
 
 % --- Executes on button press in x_minus.
 function x_minus_Callback(hObject, eventdata, handles)
@@ -149,6 +155,7 @@ function x_minus_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 inverseKine(handles.a3_x-.01, handles.a3_y, hObject, handles);
+writeMessage('xminus');
 
 
 % --- Executes on button press in x_plus.
@@ -157,6 +164,7 @@ function x_plus_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 inverseKine(handles.a3_x+.01, handles.a3_y, hObject, handles);
+writeMessage('xplus');
 
 
 % --- Executes on button press in y_minus.
@@ -165,6 +173,7 @@ function y_minus_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 inverseKine(handles.a3_x, handles.a3_y-.01, hObject, handles);
+writeMessage('yminus');
 
 
 % --- Executes on button press in y_plus.
@@ -173,6 +182,7 @@ function y_plus_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 inverseKine(handles.a3_x, handles.a3_y+.01, hObject, handles);
+writeMessage('yplus');
 
 % --- Executes on button press in paint.
 function paint_Callback(hObject, eventdata, handles)
@@ -183,6 +193,7 @@ function paint_Callback(hObject, eventdata, handles)
 %add ee_x,ee_y to points matrix
 handles.points = cat(1,handles.points,[handles.ee_x handles.ee_y]);
 updateRobot(hObject,handles);
+writeMessage('paint');
 
 %draws current state of robot onto plot
 function updateRobot(hObject, handles)
@@ -314,13 +325,49 @@ function connect_button_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 popupvalue = get(handles.popupmenu,'Value');
 if(popupvalue == 1)%master
-    startServer(3000)
+    startServer(3000);
 elseif(popupvalue == 2)%slave
-    %data = client('localhost', 3000);
     startClient('localhost',3000);
-    data = readMessage();
+    while 1
+        data = readMessage();
+        if size(data) > 0
+            act(data);
+        end
+        pause(.01);
+    end
     closeClient();
 end
+
+% --- parses command input from network
+function act(data)
+    hGuiFig = findobj('Tag','figure1','Type','figure')
+    handles = guidata(hGuiFig);
+    switch data
+        case 'paint'
+            paint_Callback(handles.paint, [], handles);
+        case 'j1minus'
+            j1_minus_Callback(handles.j1_minus, [], handles);
+        case 'j1plus'
+            j1_plus_Callback(handles.j1_plus, [], handles);
+        case 'j2minus'
+            j2_minus_Callback(handles.j2_minus, [], handles);
+        case 'j2plus'
+            j2_plus_Callback(handles.j2_plus, [], handles);
+        case 'j3minus'
+            j3_minus_Callback(handles.j3_minus, [], handles);
+        case 'j3plus'
+            j3_plus_Callback(handles.j3_plus, [], handles);
+        case 'xminus'
+            x_minus_Callback(handles.x_minus, [], handles);
+        case 'xplus'
+            x_plus_Callback(handles.x_plus, [], handles);
+        case 'yminus'
+            y_minus_Callback(handles.y_minus, [], handles);
+        case 'yplus'
+            y_plus_Callback(handles.y_plus, [], handles);
+        otherwise
+            fprintf('invalid action')
+    end
 
 
 % --- Executes on selection change in popupmenu.

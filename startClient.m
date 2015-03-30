@@ -1,7 +1,7 @@
 function startClient(host, port)
 import java.net.Socket
 import java.io.*
-global input_socket input_stream;
+global input_socket input_stream d_input_stream;
 while true
     
     try
