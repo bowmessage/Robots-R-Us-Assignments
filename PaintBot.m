@@ -22,7 +22,7 @@ function varargout = PaintBot(varargin)
 
 % Edit the above text to modify the response to help PaintBot
 
-% Last Modified by GUIDE v2.5 30-Mar-2015 16:56:51
+% Last Modified by GUIDE v2.5 30-Mar-2015 17:56:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -445,3 +445,15 @@ function delayed_box_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of delayed_box
+
+
+% --- Executes when user attempts to close figure1.
+function figure1_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: delete(hObject) closes the figure
+closeClient();
+closeServer();
+delete(hObject);
