@@ -22,7 +22,7 @@ function varargout = PaintBot(varargin)
 
 % Edit the above text to modify the response to help PaintBot
 
-% Last Modified by GUIDE v2.5 28-Mar-2015 12:22:28
+% Last Modified by GUIDE v2.5 30-Mar-2015 16:56:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -331,6 +331,12 @@ elseif(popupvalue == 2)%slave
     while 1
         data = readMessage();
         if size(data) > 0
+            data_arr = strsplit(data, ',');
+            for i = 1:size(data_arr)
+                if size(data_arr(i)) > 0
+                    act(data_arr(i));
+                end
+            end
             act(data);
         end
         pause(.01);
@@ -340,32 +346,34 @@ end
 
 % --- parses command input from network
 function act(data)
-    hGuiFig = findobj('Tag','figure1','Type','figure')
+    hGuiFig = findobj('Tag','figure1','Type','figure');
     handles = guidata(hGuiFig);
-    switch data
-        case 'paint'
+    if get(handles.delayed_box, 'Value')
+        pause(2);
+    end
+    if strcmp(data, 'paint')
             paint_Callback(handles.paint, [], handles);
-        case 'j1minus'
+    elseif strcmp(data, 'j1minus')
             j1_minus_Callback(handles.j1_minus, [], handles);
-        case 'j1plus'
+    elseif strcmp(data, 'j1plus')
             j1_plus_Callback(handles.j1_plus, [], handles);
-        case 'j2minus'
+    elseif strcmp(data, 'j2minus')
             j2_minus_Callback(handles.j2_minus, [], handles);
-        case 'j2plus'
+    elseif strcmp(data, 'j2plus')
             j2_plus_Callback(handles.j2_plus, [], handles);
-        case 'j3minus'
+    elseif strcmp(data, 'j3minus')
             j3_minus_Callback(handles.j3_minus, [], handles);
-        case 'j3plus'
+    elseif strcmp(data, 'j3plus')
             j3_plus_Callback(handles.j3_plus, [], handles);
-        case 'xminus'
+    elseif strcmp(data, 'xminus')
             x_minus_Callback(handles.x_minus, [], handles);
-        case 'xplus'
+    elseif strcmp(data, 'xplus')
             x_plus_Callback(handles.x_plus, [], handles);
-        case 'yminus'
+    elseif strcmp(data, 'yminus')
             y_minus_Callback(handles.y_minus, [], handles);
-        case 'yplus'
+    elseif strcmp(data, 'yplus')
             y_plus_Callback(handles.y_plus, [], handles);
-        otherwise
+    else
             fprintf('invalid action')
     end
 
@@ -422,3 +430,12 @@ function ipaddress_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in delayed_box.
+function delayed_box_Callback(hObject, eventdata, handles)
+% hObject    handle to delayed_box (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of delayed_box
