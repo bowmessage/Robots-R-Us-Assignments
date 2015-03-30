@@ -27,11 +27,11 @@ function varargout = PaintBot(varargin)
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @PaintBot_OpeningFcn, ...
-                   'gui_OutputFcn',  @PaintBot_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @PaintBot_OpeningFcn, ...
+    'gui_OutputFcn',  @PaintBot_OutputFcn, ...
+    'gui_LayoutFcn',  [] , ...
+    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
@@ -80,7 +80,7 @@ updateRobot(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = PaintBot_OutputFcn(hObject, eventdata, handles) 
+function varargout = PaintBot_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -218,15 +218,15 @@ for i = 1:size(handles.points,1)
 end
 arm1 = generate_Arm(.05,arm1_length,'r');
 hold on
-generate_Circle(.5,0,.025,'c'); 
+generate_Circle(.5,0,.025,'c');
 arm2 = generate_Arm(.05,arm2_length,'b');
 arm3 = generate_Arm(.05,arm3_length,'g');
 
 %Set positions and Rotations
 %arm 1 base always gets set to X=.5, Y=0
 set(arm1,'XData',get(arm1,'XData')+.5);
-set(arm1,'YData',get(arm1,'YData') + arm1_length); 
-rotate(arm1,[0 0 1],handles.j1_theta,[.5 0 0]);    
+set(arm1,'YData',get(arm1,'YData') + arm1_length);
+rotate(arm1,[0 0 1],handles.j1_theta,[.5 0 0]);
 %arm 2
 a2_x = -sind(handles.j1_theta) * (arm1_length*2) + .5;
 a2_y = cosd(handles.j1_theta) * (arm1_length*2);
@@ -327,17 +327,23 @@ popupvalue = get(handles.popupmenu,'Value');
 if(popupvalue == 1)%master
     startServer(3000);
 elseif(popupvalue == 2)%slave
-    startClient('localhost',3000);
+    ipaddress = get(handles.ipaddress,'String')
+    startClient(ipaddress,3000);
     while 1
         data = readMessage();
         if size(data) > 0
             data_arr = strsplit(data, ',');
             for i = 1:size(data_arr)
                 if size(data_arr(i)) > 0
-                    act(data_arr(i));
+                    delay = 0.01
+                    if get(handles.delayed_box, 'Value')
+                        delay = 2
+                    end
+                    t = timer('StartDelay', delay, 'TimerFcn', {@act, data_arr(i)});
+                    start(t);
+                    system('ipconfig')
                 end
             end
-            act(data);
         end
         pause(.01);
     end
@@ -345,37 +351,37 @@ elseif(popupvalue == 2)%slave
 end
 
 % --- parses command input from network
-function act(data)
-    hGuiFig = findobj('Tag','figure1','Type','figure');
-    handles = guidata(hGuiFig);
-    if get(handles.delayed_box, 'Value')
-        pause(2);
-    end
-    if strcmp(data, 'paint')
-            paint_Callback(handles.paint, [], handles);
-    elseif strcmp(data, 'j1minus')
-            j1_minus_Callback(handles.j1_minus, [], handles);
-    elseif strcmp(data, 'j1plus')
-            j1_plus_Callback(handles.j1_plus, [], handles);
-    elseif strcmp(data, 'j2minus')
-            j2_minus_Callback(handles.j2_minus, [], handles);
-    elseif strcmp(data, 'j2plus')
-            j2_plus_Callback(handles.j2_plus, [], handles);
-    elseif strcmp(data, 'j3minus')
-            j3_minus_Callback(handles.j3_minus, [], handles);
-    elseif strcmp(data, 'j3plus')
-            j3_plus_Callback(handles.j3_plus, [], handles);
-    elseif strcmp(data, 'xminus')
-            x_minus_Callback(handles.x_minus, [], handles);
-    elseif strcmp(data, 'xplus')
-            x_plus_Callback(handles.x_plus, [], handles);
-    elseif strcmp(data, 'yminus')
-            y_minus_Callback(handles.y_minus, [], handles);
-    elseif strcmp(data, 'yplus')
-            y_plus_Callback(handles.y_plus, [], handles);
-    else
-            fprintf('invalid action')
-    end
+function act(timer, timerEvent, data)
+data
+
+hGuiFig = findobj('Tag','figure1','Type','figure');
+handles = guidata(hGuiFig);
+
+if strcmp(data, 'paint')
+    paint_Callback(handles.paint, [], handles);
+elseif strcmp(data, 'j1minus')
+    j1_minus_Callback(handles.j1_minus, [], handles);
+elseif strcmp(data, 'j1plus')
+    j1_plus_Callback(handles.j1_plus, [], handles);
+elseif strcmp(data, 'j2minus')
+    j2_minus_Callback(handles.j2_minus, [], handles);
+elseif strcmp(data, 'j2plus')
+    j2_plus_Callback(handles.j2_plus, [], handles);
+elseif strcmp(data, 'j3minus')
+    j3_minus_Callback(handles.j3_minus, [], handles);
+elseif strcmp(data, 'j3plus')
+    j3_plus_Callback(handles.j3_plus, [], handles);
+elseif strcmp(data, 'xminus')
+    x_minus_Callback(handles.x_minus, [], handles);
+elseif strcmp(data, 'xplus')
+    x_plus_Callback(handles.x_plus, [], handles);
+elseif strcmp(data, 'yminus')
+    y_minus_Callback(handles.y_minus, [], handles);
+elseif strcmp(data, 'yplus')
+    y_plus_Callback(handles.y_plus, [], handles);
+else
+    fprintf('invalid action')
+end
 
 
 % --- Executes on selection change in popupmenu.
