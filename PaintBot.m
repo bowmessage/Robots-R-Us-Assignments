@@ -324,6 +324,10 @@ function connect_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 popupvalue = get(handles.popupmenu,'Value');
+set(handles.popupmenu,'Enable','off'); %no switching of type mid-run
+set(handles.connect_button,'Enable','off'); %only allowed to click button once
+set(handles.ipaddress,'Enable','off');
+data = '';
 if(popupvalue == 1)%master
     startServer(80);
 elseif(popupvalue == 2)%slave
@@ -331,23 +335,26 @@ elseif(popupvalue == 2)%slave
     startClient(ipaddress,80);
     while 1
         data = strcat(data, readMessage());
-        if size(data) > 0 && size(strfind(data, ',')) > 0
+        if and(size(data) > 0, size(strfind(data, ',')) > 0)
             data_arr = strsplit(data, ',');
-            for i = 1:size(data_arr)-1
-                if size(data_arr(i)) > 0
+            %for i = 1:size(data_arr)-1
+                if size(data_arr(1)) > 0
                     delay = 0.01
                     if get(handles.delayed_box, 'Value')
                         delay = 2
                     end
-                    t = timer('StartDelay', delay, 'TimerFcn', {@act, data_arr(i)});
+                    t = timer('StartDelay', delay, 'TimerFcn', {@act, data_arr(1)});
                     start(t);
                 end
+            %end
+            data = '';
+            for i = 2:size(data_arr)
+                data = strcat(data, data_arr(i));
             end
-            data = data_arr(size(data_arr));
+            %data
         end
         pause(.01);
     end
-    closeClient();
 end
 
 % --- parses command input from network
@@ -392,14 +399,41 @@ function popupmenu_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns popupmenu contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupmenu
+
 popupvalue = get(hObject,'Value');
 if(popupvalue == 1)%master
     %set(handles.connect_button,'Enable','off');
+    %master does controls
+    set(handles.j1_minus,'Enable','on');
+    set(handles.j1_plus,'Enable','on');
+    set(handles.j2_minus,'Enable','on');
+    set(handles.j2_plus,'Enable','on');
+    set(handles.j3_minus,'Enable','on');
+    set(handles.j3_plus,'Enable','on');
+    set(handles.x_minus,'Enable','on');
+    set(handles.y_minus,'Enable','on');
+    set(handles.x_plus,'Enable','on');
+    set(handles.y_plus,'Enable','on');
+    set(handles.paint,'Enable','on');
+    %master doesn't select ipaddress or delays
     set(handles.ipaddress,'Enable','off');
+    set(handles.delayed_box,'Enable','off');
 elseif(popupvalue == 2)%slave
-    closeServer();
-    %set(handles.connect_button,'Enable','on');
+    %slave isn't allowed to do any controlling
+    set(handles.j1_minus,'Enable','off');
+    set(handles.j1_plus,'Enable','off');
+    set(handles.j2_minus,'Enable','off');
+    set(handles.j2_plus,'Enable','off');
+    set(handles.j3_minus,'Enable','off');
+    set(handles.j3_plus,'Enable','off');
+    set(handles.x_minus,'Enable','off');
+    set(handles.y_minus,'Enable','off');
+    set(handles.x_plus,'Enable','off');
+    set(handles.y_plus,'Enable','off');
+    set(handles.paint,'Enable','off');
+    %slave sets ip + connects + chooses if delayed
     set(handles.ipaddress,'Enable','on');
+    set(handles.delayed_box,'Enable','on');
 end
 
 % --- Executes during object creation, after setting all properties.
