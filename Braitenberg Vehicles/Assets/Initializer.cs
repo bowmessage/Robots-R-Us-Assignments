@@ -6,7 +6,6 @@ public class Initializer : MonoBehaviour {
 
 	public GameObject Vehicle;
     public GameObject Light;
-
     public enum simState
     {
         lightSetup,
