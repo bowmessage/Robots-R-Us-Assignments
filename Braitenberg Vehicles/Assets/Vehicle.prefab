@@ -553,6 +553,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed61c980c0e3a574ab1971b30a184adb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  simRunning: 0
   leftWheel: {fileID: 5425260}
   rightWheel: {fileID: 5468840}
   body: {fileID: 453086}

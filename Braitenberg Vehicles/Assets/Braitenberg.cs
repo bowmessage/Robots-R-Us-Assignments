@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class Braitenberg : MonoBehaviour
 {
-
+    public bool simRunning = false;
     public Rigidbody leftWheel;
     public Rigidbody rightWheel;
     public Transform body;
@@ -27,25 +27,29 @@ public class Braitenberg : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        /*
         //find all light sources for this simulation
         foreach(GameObject l in GameObject.FindGameObjectsWithTag("Light"))
         {
             lights.Add(l.transform);
-        }
+        }*/
     }
 
     void Update()
     {
-        float leftSensorValue = 0;
-        float rightSensorValue = 0;
-        foreach (Transform l in lights)
+        if (simRunning)
         {
-            leftSensorValue += 100 / Vector3.Distance(new Vector3(l.position.x, leftSensor.position.y, l.position.z), leftSensor.position);
-            rightSensorValue += 100 / Vector3.Distance(new Vector3(l.position.x, rightSensor.position.y, l.position.z), rightSensor.position);
-            //Debug.Log("Left : " +leftSensorValue + ", Right : " + rightSensorValue);
+            float leftSensorValue = 0;
+            float rightSensorValue = 0;
+            foreach (Transform l in lights)
+            {
+                leftSensorValue += 100 / Vector3.Distance(new Vector3(l.position.x, leftSensor.position.y, l.position.z), leftSensor.position);
+                rightSensorValue += 100 / Vector3.Distance(new Vector3(l.position.x, rightSensor.position.y, l.position.z), rightSensor.position);
+                //Debug.Log("Left : " +leftSensorValue + ", Right : " + rightSensorValue);
+            }
+            leftWheel.velocity = body.forward * speedMultiplier * (k.K11 * leftSensorValue + k.K12 * rightSensorValue);
+            rightWheel.velocity = body.forward * speedMultiplier * (k.K21 * leftSensorValue + k.K22 * rightSensorValue);
+            //Debug.Log("Left : " + leftWheel.velocity.magnitude + ", Right : " + rightWheel.velocity.magnitude);
         }
-        leftWheel.velocity = body.forward * speedMultiplier * (k.K11 * leftSensorValue + k.K12 * rightSensorValue);
-        rightWheel.velocity = body.forward * speedMultiplier * (k.K21 * leftSensorValue + k.K22 * rightSensorValue);
-        //Debug.Log("Left : " + leftWheel.velocity.magnitude + ", Right : " + rightWheel.velocity.magnitude);
     }
 }

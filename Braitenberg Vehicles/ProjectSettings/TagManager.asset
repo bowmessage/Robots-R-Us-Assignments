@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Light
   - VehicleBody
+  - Floor
   layers:
   - Default
   - TransparentFX
