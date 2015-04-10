@@ -320,7 +320,7 @@ Prefab:
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 4ef7a51d8ca8fc546b595ee1bd18b61b, type: 2}
   m_IsPrefabParent: 0
---- !u!4 &1312746136
+--- !u!4 &1312746136 stripped
 Transform:
   m_PrefabParentObject: {fileID: 454512, guid: 4ef7a51d8ca8fc546b595ee1bd18b61b, type: 2}
   m_PrefabInternal: {fileID: 848568229}
@@ -335,6 +335,7 @@ GameObject:
   - 33: {fileID: 1417335642}
   - 64: {fileID: 1417335641}
   - 23: {fileID: 1417335640}
+  - 114: {fileID: 1417335644}
   m_Layer: 0
   m_Name: Floor
   m_TagString: Untagged
@@ -397,6 +398,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 366424735}
   m_RootOrder: 4
+--- !u!114 &1417335644
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1417335639}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9e0f8b31c3be418855c565653c3a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Vehicle: {fileID: 157880, guid: 4ef7a51d8ca8fc546b595ee1bd18b61b, type: 2}
 --- !u!1 &1535078768
 GameObject:
   m_ObjectHideFlags: 0
@@ -486,7 +499,7 @@ Transform:
   - {fileID: 1551860660}
   m_Father: {fileID: 0}
   m_RootOrder: 1
---- !u!4 &1551860660
+--- !u!4 &1551860660 stripped
 Transform:
   m_PrefabParentObject: {fileID: 497472, guid: a804d7eef249437418ce6bc0ea734f93, type: 2}
   m_PrefabInternal: {fileID: 486324299}
