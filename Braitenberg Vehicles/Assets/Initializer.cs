@@ -6,6 +6,11 @@ public class Initializer : MonoBehaviour {
 
 	public GameObject Vehicle;
 
+	public string k00 = "0";
+	public string k01 = "0";
+	public string k10 = "0";
+	public string k11 = "0";
+
 	// Use this for initialization
 	void Start () {
 	
@@ -17,10 +22,17 @@ public class Initializer : MonoBehaviour {
 	}
 
 	void OnGUI() {
+		//GUILayout.BeginArea (new Rect (10, 10, 100, 100));
+		GUILayout.BeginHorizontal ("");
+		k00 = GUILayout.TextField (k00, GUILayout.Width (40));
+		k01 = GUILayout.TextField (k01, GUILayout.Width (40));
+		GUILayout.EndHorizontal ();
 
-		if (GUI.Button (new Rect (20, 40, 80, 20), "Start")) {
-
-		}
+		GUILayout.BeginHorizontal ("");
+		k10 = GUILayout.TextField (k10, GUILayout.Width (40));
+		k11 = GUILayout.TextField (k11, GUILayout.Width (40));
+		GUILayout.EndHorizontal ();
+		//GUILayout.EndArea ();
 	}
 
 	void OnMouseDown() {

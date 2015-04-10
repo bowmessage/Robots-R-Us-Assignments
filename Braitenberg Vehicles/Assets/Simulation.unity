@@ -410,6 +410,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Vehicle: {fileID: 157880, guid: 4ef7a51d8ca8fc546b595ee1bd18b61b, type: 2}
+  k00: 0
+  k01: 0
+  k10: 0
+  k11: 0
 --- !u!1 &1535078768
 GameObject:
   m_ObjectHideFlags: 0
