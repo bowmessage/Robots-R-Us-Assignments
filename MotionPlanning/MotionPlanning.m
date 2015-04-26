@@ -140,7 +140,7 @@ end
 % [1 2 3]
 % [x y deltaY isRight]
 % use deltaY to get top point of that block( x,y+deltaY)
-points = [tableData(1,3) tableData(2,3) 200 false; tableData(1,3)+200 tableData(2,3) 200 true;tableData(1,4) tableData(2,4) 150 false; tableData(1,4)+150 tableData(2,4) 150 true; tableData(1,5) tableData(2,5) 100 false; tableData(1,5)+100 tableData(2,5) 100 true];
+points = [tableData(1,3) tableData(2,3) 200 false 1; tableData(1,3)+200 tableData(2,3) 200 true 1;tableData(1,4) tableData(2,4) 150 false 2; tableData(1,4)+150 tableData(2,4) 150 true 2; tableData(1,5) tableData(2,5) 100 false 3; tableData(1,5)+100 tableData(2,5) 100 true 3];
 points = sortrows(points,1);
 regions = [gen_region_struct('C1',0,0,500,500,[])];
 for i=1:size(points)
@@ -151,20 +151,22 @@ for i=1:size(points)
     blockIndices = [3 4 5];
     blockSizes = [200 150 100];
     for j=1:3
-        %check block
-        if(points(i,1) > tableData(1,blockIndices(j)) && points(i,1) < tableData(1,blockIndices(j))+blockSizes(j))
-            %collides with block 1 somewhere.
-            if(tableData(2,blockIndices(j))+blockSizes(j) < points(i,2)) %if topOther < botThis
-                collisionsDown = [collisionsDown tableData(2,blockIndices(j))+blockSizes(j)];
-            else if(tableData(2,blockIndices(j)) <= points(i,2))        %if botOther < botThis, no line in this case
-                collisionsDown = [collisionsDown points(i,2)];
+        if(points(i,5)~=j)  %don't collide with yourself.
+            %check block
+            if(points(i,1) >= tableData(1,blockIndices(j)) && points(i,1) <= tableData(1,blockIndices(j))+blockSizes(j))
+                %collides with block 1 somewhere.
+                if(tableData(2,blockIndices(j))+blockSizes(j) < points(i,2)) %if topOther < botThis
+                    collisionsDown = [collisionsDown tableData(2,blockIndices(j))+blockSizes(j)];
+                else if(tableData(2,blockIndices(j)) <= points(i,2))        %if botOther < botThis, no line in this case
+                    collisionsDown = [collisionsDown points(i,2)];
+                    end
                 end
-            end
-            if(tableData(2,blockIndices(j)) > points(i,2)+points(i,3)) %if botOther > topThis
-                collisionsUp = [collisionsUp tableData(2,blockIndices(j))];
-            else if(tableData(2,blockIndices(j))+blockSizes(j) >= points(i,2)+points(i,3)) %if topOther > topThis
-                collisionsUp = [collisionsUp points(i,2)+points(i,3)];
-            %else block is fully inside of me, i can ignore it.
+                if(tableData(2,blockIndices(j)) > points(i,2)+points(i,3)) %if botOther > topThis
+                    collisionsUp = [collisionsUp tableData(2,blockIndices(j))];
+                else if(tableData(2,blockIndices(j))+blockSizes(j) >= points(i,2)+points(i,3)) %if topOther > topThis
+                    collisionsUp = [collisionsUp points(i,2)+points(i,3)];
+                %else block is fully inside of me, i can ignore it.
+                    end
                 end
             end
         end
@@ -181,7 +183,7 @@ for i=1:size(points)
     downDone = false;
     for j=1:origRegionSize(1)
         %check if x of line is within region x range
-        if(points(i,1) > regions(j).x && points(i,1) < regions(j).x+regions(j).w)
+        if(points(i,1) >= regions(j).x && points(i,1) <= regions(j).x+regions(j).w)
             %check if top point is on the y
             if(upDone && downDone)
                 break;
@@ -190,10 +192,10 @@ for i=1:size(points)
                 %split region
                 rSize = size(regions);
                 regions(j).w = points(i,1)-regions(j).x;
-                if(points(i,4) && ~downDone && collisionsUp(1)-collisionsDown(1)>0)
+                if(points(i,4) && ~downDone && collisionsUp(1)-collisionsDown(1)>0 && 500 - points(i,1)>0)
                     regions = [regions; gen_region_struct(strcat('C',num2str(rSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), collisionsUp(1)-collisionsDown(1), [j])];
                     regions(j).neighbors = [regions(j).neighbors; rSize(1)+1];
-                else if(~(points(i,4)) && collisionsUp(1)-(points(i,2)+points(i,3))>0)
+                else if(~(points(i,4)) && collisionsUp(1)-(points(i,2)+points(i,3))>0 && 500 - points(i,1)>0)
                     %left side upper
                     regions = [regions; gen_region_struct(strcat('C',num2str(rSize(1)+1)),points(i,1), points(i,2)+points(i,3), 500 - points(i,1), collisionsUp(1)-(points(i,2)+points(i,3)), [j])];
                     regions(j).neighbors = [regions(j).neighbors; rSize(1)+1];
@@ -212,10 +214,10 @@ for i=1:size(points)
             if(collisionsDown(1) == regions(j).y)
                 rSize = size(regions);
                 regions(j).w = points(i,1)-regions(j).x;
-                if(points(i,4) && ~upDone && collisionsUp(1)-collisionsDown(1)>0)
+                if(points(i,4) && ~upDone && collisionsUp(1)-collisionsDown(1)>0 && 500 - points(i,1)>0)
                     regions = [regions; gen_region_struct(strcat('C',num2str(rSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), collisionsUp(1)-collisionsDown(1), [j])];
                     regions(j).neighbors = [regions(j).neighbors; rSize(1)+1];
-                else if(~(points(i,4)) && points(i,2)-collisionsDown(1)>0)
+                else if(~(points(i,4)) && points(i,2)-collisionsDown(1)>0 && 500 - points(i,1)>0)
                     regions = [regions; gen_region_struct(strcat('C',num2str(rSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), points(i,2)-collisionsDown(1), [j])];
                     regions(j).neighbors = [regions(j).neighbors; rSize(1)+1];
                     else
@@ -273,6 +275,35 @@ for i=2:pFinalSize(1)
 end
 set(handles.feedbackText, 'ForegroundColor', 'b');
 set(handles.feedbackText, 'String', pathString);
+%draw lines on axes to display path
+lastPoint = [tableData(1,1) tableData(2,1)];
+lastRegion = path(1);
+for i=2:pFinalSize(1)
+    %find overlapping segment of regions, we know there is one.
+    if(path(i) > lastRegion)    %moving to the right using left end of next region
+        if(regions(path(i)).y+regions(path(i)).h > regions(lastRegion).y+regions(lastRegion).h) %if top new > top old
+            midpoint = [regions(path(i)).x regions(path(i)).y+((regions(lastRegion).y+regions(lastRegion).h-regions(path(i)).y))/2];
+        else if(regions(path(i)).y > regions(lastRegion).y)%if bottom new > bottom old
+            midpoint = [regions(path(i)).x regions(lastRegion).y+regions(lastRegion).h-((regions(lastRegion).y+regions(lastRegion).h-regions(path(i)).y))/2];
+        else
+            midpoint = [regions(path(i)).x regions(lastRegion).y+((regions(path(i)).y+regions(path(i)).h-regions(lastRegion).y))/2];
+            end
+        end
+    else %moving to the left use right end of next region
+        if(regions(path(i)).y+regions(path(i)).h > regions(lastRegion).y+regions(lastRegion).h) %if top new > top old
+            midpoint = [regions(path(i)).x+regions(path(i)).w regions(path(i)).y+((regions(lastRegion).y+regions(lastRegion).h-regions(path(i)).y))/2];
+        else if(regions(path(i)).y > regions(lastRegion).y)%if bottom new > bottom old, topOld - (topOld-botNew)/2
+            midpoint = [regions(path(i)).x+regions(path(i)).w regions(lastRegion).y+regions(lastRegion).h-((regions(lastRegion).y+regions(lastRegion).h-regions(path(i)).y))/2];
+        else
+            midpoint = [regions(path(i)).x+regions(path(i)).w regions(lastRegion).y+((regions(path(i)).y+regions(path(i)).h-regions(lastRegion).y))/2];
+            end
+        end
+    end
+    plot([lastPoint(1)*div midpoint(1)*div],[lastPoint(2)*div midpoint(2)*div], 'black --');
+    lastRegion = path(i);
+    lastPoint = midpoint;
+end
+plot([lastPoint(1)*div tableData(1,2)*div], [lastPoint(2)*div tableData(2,2)*div], 'black --');
 %clean up axes
 set(handles.axes1,'Xlim',[0,1]);
 set(handles.axes1,'Ylim',[0,1]);
