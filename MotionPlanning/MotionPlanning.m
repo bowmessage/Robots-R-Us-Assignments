@@ -98,7 +98,9 @@ tableData = get(handles.uitable, 'data');
 hold off
 gen_point(tableData(1,1)*div,tableData(2,1)*div,3*div);
 hold on
+text((tableData(1,1)-13)*div, (tableData(2,1)+10)*div,'Start');
 gen_point(tableData(1,2)*div,tableData(2,2)*div,3*div);
+text((tableData(1,2)-15)*div, (tableData(2,2)+10)*div,'Finish');
 gen_block(tableData(1,3)*div,tableData(2,3)*div,200*div,200*div,[.5 .5 .5],0.5);
 gen_block(tableData(1,4)*div,tableData(2,4)*div,150*div,150*div,[.5 .5 .5],0.5);
 gen_block(tableData(1,5)*div,tableData(2,5)*div,100*div,100*div,[.5 .5 .5],0.5);
@@ -188,10 +190,10 @@ for i=1:size(points)
                 %split region
                 rSize = size(regions);
                 regions(j).w = points(i,1)-regions(j).x;
-                if(points(i,4) && ~downDone)
+                if(points(i,4) && ~downDone && collisionsUp(1)-collisionsDown(1)>0)
                     regions = [regions; gen_region_struct(strcat('C',num2str(rSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), collisionsUp(1)-collisionsDown(1), [j])];
                     regions(j).neighbors = [regions(j).neighbors; rSize(1)+1];
-                else if(~(points(i,4)))
+                else if(~(points(i,4)) && collisionsUp(1)-(points(i,2)+points(i,3))>0)
                     %left side upper
                     regions = [regions; gen_region_struct(strcat('C',num2str(rSize(1)+1)),points(i,1), points(i,2)+points(i,3), 500 - points(i,1), collisionsUp(1)-(points(i,2)+points(i,3)), [j])];
                     regions(j).neighbors = [regions(j).neighbors; rSize(1)+1];
@@ -210,10 +212,10 @@ for i=1:size(points)
             if(collisionsDown(1) == regions(j).y)
                 rSize = size(regions);
                 regions(j).w = points(i,1)-regions(j).x;
-                if(points(i,4) && ~upDone)
+                if(points(i,4) && ~upDone && collisionsUp(1)-collisionsDown(1)>0)
                     regions = [regions; gen_region_struct(strcat('C',num2str(rSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), collisionsUp(1)-collisionsDown(1), [j])];
                     regions(j).neighbors = [regions(j).neighbors; rSize(1)+1];
-                else if(~(points(i,4)))
+                else if(~(points(i,4)) && points(i,2)-collisionsDown(1)>0)
                     regions = [regions; gen_region_struct(strcat('C',num2str(rSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), points(i,2)-collisionsDown(1), [j])];
                     regions(j).neighbors = [regions(j).neighbors; rSize(1)+1];
                     else
@@ -228,6 +230,7 @@ for i=1:size(points)
     end
 end
 for i=1:size(regions)
+    regions(i)
     text((regions(i).x + regions(i).w/2 - 7)*div,(regions(i).y + regions(i).h/2)*div,regions(i).name);
 end
 %DFS on region tree to find solution
@@ -262,7 +265,7 @@ if(startIndex == 0 || goalIndex == 0)
     return;
 end
 path=[startIndex];
-path = DFS(regions,regions(startIndex),path, goalIndex);
+path = DFS(regions,startIndex,path, goalIndex);
 pathString = strcat('Possible Pathway=',regions(path(1)).name);
 pFinalSize = size(path);
 for i=2:pFinalSize(1)
@@ -280,23 +283,31 @@ set(handles.axes1,'YTickLabel',['  0';'100';'200';'300';'400';'500']);
 % Update handles structure
 guidata(hObject, handles);
 
-function path = DFS(regions,region,path,goalIndex)
-nSize = size(region.neighbors);
+function path = DFS(regions,currIndex,path,goalIndex)
+nSize = size(regions(currIndex).neighbors);
+%create sorted neighbor list (based on index distance from goalIndex)
+neighbors = [];
 for i=1:nSize(1)
-    if(region.neighbors(i)==goalIndex)
-        path = [path; region.neighbors(i)];
+    neighbors = [neighbors; abs(regions(currIndex).neighbors(i)-goalIndex) regions(currIndex).neighbors(i)]; 
+end
+neighbors = sortrows(neighbors,1);
+for i=1:nSize(1)
+    %quick stop if next is goal
+    if(neighbors(i,2)==goalIndex)
+        path = [path; neighbors(i,2)];
         return;
     end
+    %check if next has been visited (in path already)
     visited = false;
     pSize = size(path);
     for j=1:pSize(1)
-        if(path(j) == region.neighbors(i))
+        if(path(j) == neighbors(i,2))
             visited = true;
             break;
         end
     end
-    if(~visited)
-        possiblePath = DFS(regions,regions(region.neighbors(i)), [path; region.neighbors(i)], goalIndex);
+    if(~visited)    %if not visited, recur
+        possiblePath = DFS(regions, neighbors(i,2), [path; neighbors(i,2)], goalIndex);
         if(possiblePath(end)==goalIndex)
             path = possiblePath;
             return;
@@ -349,7 +360,9 @@ tableData = get(handles.uitable, 'data');
 hold off
 gen_point(tableData(1,1)*div,tableData(2,1)*div,3*div);
 hold on
+text((tableData(1,1)-13)*div, (tableData(2,1)+10)*div,'Start');
 gen_point(tableData(1,2)*div,tableData(2,2)*div,3*div);
+text((tableData(1,2)-15)*div, (tableData(2,2)+10)*div,'Finish');
 gen_block(tableData(1,3)*div,tableData(2,3)*div,200*div,200*div,[.5 .5 .5],0.5);
 gen_block(tableData(1,4)*div,tableData(2,4)*div,150*div,150*div,[.5 .5 .5],0.5);
 gen_block(tableData(1,5)*div,tableData(2,5)*div,100*div,100*div,[.5 .5 .5],0.5);
