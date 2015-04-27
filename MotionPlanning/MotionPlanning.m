@@ -442,19 +442,11 @@ gen_block(tableData(1,4)*div,tableData(2,4)*div,150*div,150*div,[.5 .5 .5],0.5);
 gen_block(tableData(1,5)*div,tableData(2,5)*div,100*div,100*div,[.5 .5 .5],0.5);
 set(handles.feedbackText,'ForegroundColor','g');
 set(handles.feedbackText,'String','');
-%check for overlapping boxes
-blockSizes = [200 150 100];
-for i=1:2
-   for j=(i+1):3
-       iBot = box_val(i, 'bottom', tableData);
-       jTop = box_val(j, 'top',tableData);
-       iLeft = box_val(i, 'left', tableData);
-       jRight = box_val(j, 'right',tableData);
-       combSize = blockSizes(i) + blockSizes(j);
-       if((jTop-iBot) < combSize && (jTop-iBot) > 0 && (jRight-iLeft) < combSize && (jRight-iLeft) > 0)
-           set(handles.feedbackText,'ForegroundColor','r');
-           set(handles.feedbackText,'String',['Box ', num2str(i), ' and box ', num2str(j), ' are overlapping.']);
-       end
+%check out of bound errors
+for i=1:3
+   if(box_val(i, 'bottom', tableData) < 0 || box_val(i, 'top', tableData) > 500 || box_val(i, 'left', tableData) < 0 || box_val(i, 'right', tableData) > 500)
+       set(handles.feedbackText,'ForegroundColor','r');
+       set(handles.feedbackText,'String',['Box ', num2str(i), ' is out of bounds.']);
    end
 end
 %clean up axes
