@@ -113,7 +113,7 @@ startInsideBlock2 = tableData(1,1) > tableData(1,4) & tableData(1,1) < tableData
 startInsideBlock3 = tableData(1,1) > tableData(1,5) & tableData(1,1) < tableData(1,5)+100 & tableData(2,1) > tableData(2,5) & tableData(2,1) < tableData(2,4)+100;
 endInsideBlock1 = tableData(1,2) > tableData(1,3) & tableData(1,2) < tableData(1,3)+200 & tableData(2,2) > tableData(2,3) & tableData(2,2) < tableData(2,3)+200;
 endInsideBlock2 = tableData(1,2) > tableData(1,4) & tableData(1,2) < tableData(1,4)+150 & tableData(2,2) > tableData(2,4) & tableData(2,2) < tableData(2,4)+150;
-endInsideBlock3 = tableData(1,2) > tableData(1,5) & tableData(1,2) < tableData(1,5)+100 & tableData(2,2) > tableData(2,5) & tableData(2,2) < tableData(2,4)+100;
+endInsideBlock3 = tableData(1,2) > tableData(1,5) & tableData(1,2) < tableData(1,5)+100 & tableData(2,2) > tableData(2,5) & tableData(2,2) < tableData(2,5)+100;
 if(startInsideBlock1 || startInsideBlock2 || startInsideBlock3 || endInsideBlock1 || endInsideBlock2 || endInsideBlock3)
     error = true;
 end
