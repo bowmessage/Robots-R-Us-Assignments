@@ -233,17 +233,31 @@ for i=1:size(points)
     %special case for in line blocks, if down not done add it in
     if(~downDone && points(i,2)-collisionsDown(1)>0)
         rUpdatedSize = size(regions);
+        specialCase = rUpdatedSize
         neighbors = [];
-        for j=1:rUpdatedSize
-            %if my bottom left point is on right edge of another region + in y interval
-            if(points(i,1) == regions(j).x+regions(j).w)
-                if(collisionsDown(1) >= regions(j).y && collisionsDown(1) <= regions(j).y+regions(j).h)
-                    neighbors = [neighbors; j];
-                    regions(j).neighbors = [regions(j).neighbors; rUpdatedSize(1)+1];
+        if(points(i,4)) % if right side
+             for j=1:rUpdatedSize
+                %if my bottom right point is on left edge
+                if(points(i,1) == regions(j).x)
+                    if(collisionsDown(1) >= regions(j).y && collisionsDown(1) <= regions(j).y+regions(j).h)
+                        neighbors = [neighbors; j];
+                        regions(j).neighbors = [regions(j).neighbors; rUpdatedSize(1)+1];
+                    end
                 end
             end
+            regions = [regions; gen_region_struct(strcat('C',num2str(rUpdatedSize(1)+1)),points(i-1,1), collisionsDown(1), points(i,1) - points(i-1,1), points(i,2)-collisionsDown(1),neighbors)];
+        else
+            for j=1:rUpdatedSize
+                %if my bottom left point is on right edge of another region + in y interval
+                if(points(i,1) == regions(j).x+regions(j).w)
+                    if(collisionsDown(1) >= regions(j).y && collisionsDown(1) <= regions(j).y+regions(j).h)
+                        neighbors = [neighbors; j];
+                        regions(j).neighbors = [regions(j).neighbors; rUpdatedSize(1)+1];
+                    end
+                end
+            end
+            regions = [regions; gen_region_struct(strcat('C',num2str(rUpdatedSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), points(i,2)-collisionsDown(1),neighbors)];
         end
-        regions = [regions; gen_region_struct(strcat('C',num2str(rUpdatedSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), points(i,2)-collisionsDown(1),neighbors)];
     end
 end
 for i=1:size(regions)
@@ -282,7 +296,9 @@ if(startIndex == 0 || goalIndex == 0)
     return;
 end
 path=[startIndex];
-path = DFS(regions,startIndex,path, goalIndex);
+if(startIndex ~= goalIndex)
+    path = DFS(regions,startIndex,path, goalIndex);
+end
 pathString = strcat('Possible Pathway=',regions(path(1)).name);
 pFinalSize = size(path);
 for i=2:pFinalSize(1)
@@ -293,9 +309,10 @@ set(handles.feedbackText, 'String', pathString);
 %draw lines on axes to display path
 lastPoint = [tableData(1,1) tableData(2,1)];
 lastRegion = path(1);
+path
 for i=2:pFinalSize(1)
     %find overlapping segment of regions, we know there is one.
-    if(path(i) > lastRegion)    %moving to the right using left end of next region
+    if(regions(path(i)).x > regions(lastRegion).x)    %moving to the right using left end of next region
         if(regions(path(i)).y+regions(path(i)).h > regions(lastRegion).y+regions(lastRegion).h) %if top new > top old
             midpoint = [regions(path(i)).x regions(path(i)).y+((regions(lastRegion).y+regions(lastRegion).h-regions(path(i)).y))/2];
         else if(regions(path(i)).y > regions(lastRegion).y)%if bottom new > bottom old
