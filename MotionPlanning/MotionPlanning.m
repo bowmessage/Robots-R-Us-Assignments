@@ -230,6 +230,21 @@ for i=1:size(points)
             end
         end
     end
+    %special case for in line blocks, if down not done add it in
+    if(~downDone && points(i,2)-collisionsDown(1)>0)
+        rUpdatedSize = size(regions);
+        neighbors = [];
+        for j=1:rUpdatedSize
+            %if my bottom left point is on right edge of another region + in y interval
+            if(points(i,1) == regions(j).x+regions(j).w)
+                if(collisionsDown(1) >= regions(j).y && collisionsDown(1) <= regions(j).y+regions(j).h)
+                    neighbors = [neighbors; j];
+                    regions(j).neighbors = [regions(j).neighbors; rUpdatedSize(1)+1];
+                end
+            end
+        end
+        regions = [regions; gen_region_struct(strcat('C',num2str(rUpdatedSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), points(i,2)-collisionsDown(1),neighbors)];
+    end
 end
 for i=1:size(regions)
     regions(i)
@@ -284,7 +299,11 @@ for i=2:pFinalSize(1)
         if(regions(path(i)).y+regions(path(i)).h > regions(lastRegion).y+regions(lastRegion).h) %if top new > top old
             midpoint = [regions(path(i)).x regions(path(i)).y+((regions(lastRegion).y+regions(lastRegion).h-regions(path(i)).y))/2];
         else if(regions(path(i)).y > regions(lastRegion).y)%if bottom new > bottom old
-            midpoint = [regions(path(i)).x regions(lastRegion).y+regions(lastRegion).h-((regions(lastRegion).y+regions(lastRegion).h-regions(path(i)).y))/2];
+            if(regions(path(i)).y+regions(path(i)).h < regions(lastRegion).y+regions(lastRegion).h)
+                midpoint = [regions(path(i)).x regions(path(i)).y+regions(path(i)).h-((regions(path(i)).y+regions(path(i)).h-regions(path(i)).y))/2];
+            else
+                midpoint = [regions(path(i)).x regions(lastRegion).y+regions(lastRegion).h-((regions(lastRegion).y+regions(lastRegion).h-regions(path(i)).y))/2];
+            end
         else
             midpoint = [regions(path(i)).x regions(lastRegion).y+((regions(path(i)).y+regions(path(i)).h-regions(lastRegion).y))/2];
             end
@@ -293,7 +312,11 @@ for i=2:pFinalSize(1)
         if(regions(path(i)).y+regions(path(i)).h > regions(lastRegion).y+regions(lastRegion).h) %if top new > top old
             midpoint = [regions(path(i)).x+regions(path(i)).w regions(path(i)).y+((regions(lastRegion).y+regions(lastRegion).h-regions(path(i)).y))/2];
         else if(regions(path(i)).y > regions(lastRegion).y)%if bottom new > bottom old, topOld - (topOld-botNew)/2
-            midpoint = [regions(path(i)).x+regions(path(i)).w regions(lastRegion).y+regions(lastRegion).h-((regions(lastRegion).y+regions(lastRegion).h-regions(path(i)).y))/2];
+            if(regions(path(i)).y+regions(path(i)).h < regions(lastRegion).y+regions(lastRegion).h)
+                midpoint = [regions(path(i)).x+regions(path(i)).w regions(path(i)).y+regions(path(i)).h-((regions(path(i)).y+regions(path(i)).h-regions(path(i)).y))/2];
+            else
+                midpoint = [regions(path(i)).x+regions(path(i)).w regions(lastRegion).y+regions(lastRegion).h-((regions(lastRegion).y+regions(lastRegion).h-regions(path(i)).y))/2];
+            end
         else
             midpoint = [regions(path(i)).x+regions(path(i)).w regions(lastRegion).y+((regions(path(i)).y+regions(path(i)).h-regions(lastRegion).y))/2];
             end
