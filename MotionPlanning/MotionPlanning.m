@@ -393,6 +393,26 @@ function s = gen_region_struct(name, x, y, w, h, neighbors)
 % neighbors = [] of connected regions
 s = struct('name',name,'x',x,'y',y,'w',w,'h',h, 'neighbors', neighbors);
 
+%helper function to get box side coordinate values
+function a = box_val(boxIndex, side, table)
+blockSizes = [200 150 100];
+if(strcmp(side, 'left'))
+    a = table(1, boxIndex+2);
+    return;
+else if(strcmp(side, 'right'))
+    a = table(1, boxIndex+2) + blockSizes(boxIndex);
+    return;
+    else if(strcmp(side, 'top'))
+        a = table(2, boxIndex+2) + blockSizes(boxIndex);
+        return;
+        else if(strcmp(side, 'bottom'))
+            a = table(2, boxIndex+2);
+            return;
+            end
+        end
+    end
+end
+
 % --- Executes when entered data in editable cell(s) in uitable.
 function uitable_CellEditCallback(hObject, eventdata, handles)
 % hObject    handle to uitable (see GCBO)
@@ -422,6 +442,21 @@ gen_block(tableData(1,4)*div,tableData(2,4)*div,150*div,150*div,[.5 .5 .5],0.5);
 gen_block(tableData(1,5)*div,tableData(2,5)*div,100*div,100*div,[.5 .5 .5],0.5);
 set(handles.feedbackText,'ForegroundColor','g');
 set(handles.feedbackText,'String','');
+%check for overlapping boxes
+blockSizes = [200 150 100];
+for i=1:2
+   for j=(i+1):3
+       iBot = box_val(i, 'bottom', tableData);
+       jTop = box_val(j, 'top',tableData);
+       iLeft = box_val(i, 'left', tableData);
+       jRight = box_val(j, 'right',tableData);
+       combSize = blockSizes(i) + blockSizes(j);
+       if((jTop-iBot) < combSize && (jTop-iBot) > 0 && (jRight-iLeft) < combSize && (jRight-iLeft) > 0)
+           set(handles.feedbackText,'ForegroundColor','r');
+           set(handles.feedbackText,'String',['Box ', num2str(i), ' and box ', num2str(j), ' are overlapping.']);
+       end
+   end
+end
 %clean up axes
 set(handles.axes1,'Xlim',[0,1]);
 set(handles.axes1,'Ylim',[0,1]);
