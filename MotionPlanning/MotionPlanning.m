@@ -52,18 +52,11 @@ function MotionPlanning_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to MotionPlanning (see VARARGIN)
 
-%clean up axes
-set(handles.axes1,'Xlim',[0,1]);
-set(handles.axes1,'Ylim',[0,1]);
-set(handles.axes1,'XTick',(0:.2:1));
-set(handles.axes1,'YTick',(0:.2:1));
-set(handles.axes1,'XTickLabel',['  0';'100';'200';'300';'400';'500']);
-set(handles.axes1,'YTickLabel',['  0';'100';'200';'300';'400';'500']);
+
 % Choose default command line output for MotionPlanning
 handles.output = hObject;
 
-% Update handles structure
-guidata(hObject, handles);
+uitable_CellEditCallback(hObject, eventdata, handles)
 
 % UIWAIT makes MotionPlanning wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -110,7 +103,7 @@ gen_block(tableData(1,5)*div,tableData(2,5)*div,100*div,100*div,[.5 .5 .5],0.5);
 error = false;
 startInsideBlock1 = tableData(1,1) > tableData(1,3) & tableData(1,1) < tableData(1,3)+200 & tableData(2,1) > tableData(2,3) & tableData(2,1) < tableData(2,3)+200;
 startInsideBlock2 = tableData(1,1) > tableData(1,4) & tableData(1,1) < tableData(1,4)+150 & tableData(2,1) > tableData(2,4) & tableData(2,1) < tableData(2,4)+150;
-startInsideBlock3 = tableData(1,1) > tableData(1,5) & tableData(1,1) < tableData(1,5)+100 & tableData(2,1) > tableData(2,5) & tableData(2,1) < tableData(2,4)+100;
+startInsideBlock3 = tableData(1,1) > tableData(1,5) & tableData(1,1) < tableData(1,5)+100 & tableData(2,1) > tableData(2,5) & tableData(2,1) < tableData(2,5)+100;
 endInsideBlock1 = tableData(1,2) > tableData(1,3) & tableData(1,2) < tableData(1,3)+200 & tableData(2,2) > tableData(2,3) & tableData(2,2) < tableData(2,3)+200;
 endInsideBlock2 = tableData(1,2) > tableData(1,4) & tableData(1,2) < tableData(1,4)+150 & tableData(2,2) > tableData(2,4) & tableData(2,2) < tableData(2,4)+150;
 endInsideBlock3 = tableData(1,2) > tableData(1,5) & tableData(1,2) < tableData(1,5)+100 & tableData(2,2) > tableData(2,5) & tableData(2,2) < tableData(2,5)+100;
@@ -193,16 +186,30 @@ for i=1:size(points)
                 rSize = size(regions);
                 regions(j).w = points(i,1)-regions(j).x;
                 if(points(i,4) && ~downDone && collisionsUp(1)-collisionsDown(1)>0 && 500 - points(i,1)>0)
-                    regions = [regions; gen_region_struct(strcat('C',num2str(rSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), collisionsUp(1)-collisionsDown(1), [j])];
-                    regions(j).neighbors = [regions(j).neighbors; rSize(1)+1];
+                    if(regions(j).w > 0)
+                        regions = [regions; gen_region_struct(strcat('C',num2str(rSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), collisionsUp(1)-collisionsDown(1), [j])];
+                        regions(j).neighbors = [regions(j).neighbors; rSize(1)+1];
+                    else
+                        regions = [regions(1:j-1); regions(j+1:end); gen_region_struct(strcat('C',j),points(i,1), collisionsDown(1), 500 - points(i,1), collisionsUp(1)-collisionsDown(1), regions(j).neighbors)];
+                    end
                 else if(~(points(i,4)) && collisionsUp(1)-(points(i,2)+points(i,3))>0 && 500 - points(i,1)>0)
                     %left side upper
-                    regions = [regions; gen_region_struct(strcat('C',num2str(rSize(1)+1)),points(i,1), points(i,2)+points(i,3), 500 - points(i,1), collisionsUp(1)-(points(i,2)+points(i,3)), [j])];
-                    regions(j).neighbors = [regions(j).neighbors; rSize(1)+1];
+                    if(regions(j).w > 0)
+                        regions = [regions; gen_region_struct(strcat('C',num2str(rSize(1)+1)),points(i,1), points(i,2)+points(i,3), 500 - points(i,1), collisionsUp(1)-(points(i,2)+points(i,3)), [j])];
+                        regions(j).neighbors = [regions(j).neighbors; rSize(1)+1];
+                    else
+                        regions = [regions(1:j-1); regions(j+1:end); gen_region_struct(strcat('C',num2str(j)),points(i,1), points(i,2)+points(i,3), 500 - points(i,1), collisionsUp(1)-(points(i,2)+points(i,3)), regions(j).neighbors)];
+                    end
                     else
                         %right side, next region been made already, just ensure neighbor setups
-                        regions(j).neighbors = [regions(j).neighbors; rSize(1)];
-                        regions(rSize(1)).neighbors = [regions(rSize(1)).neighbors; j];
+                        if(regions(j).w > 0)
+                            regions(j).neighbors = [regions(j).neighbors; rSize(1)];
+                            regions(rSize(1)).neighbors = [regions(rSize(1)).neighbors; j];
+                        else
+                            regions(rSize(1)).neighbors = regions(j).neighbors;
+                            regions(rSize(1)).name = strcat('C',num2str(j));
+                            regions = [regions(1:j-1); regions(j+1:end)];
+                        end
                     end
                 end
                 upDone = true;
@@ -215,15 +222,29 @@ for i=1:size(points)
                 rSize = size(regions);
                 regions(j).w = points(i,1)-regions(j).x;
                 if(points(i,4) && ~upDone && collisionsUp(1)-collisionsDown(1)>0 && 500 - points(i,1)>0)
-                    regions = [regions; gen_region_struct(strcat('C',num2str(rSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), collisionsUp(1)-collisionsDown(1), [j])];
-                    regions(j).neighbors = [regions(j).neighbors; rSize(1)+1];
+                    if(regions(j).w > 0)
+                        regions = [regions; gen_region_struct(strcat('C',num2str(rSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), collisionsUp(1)-collisionsDown(1), [j])];
+                        regions(j).neighbors = [regions(j).neighbors; rSize(1)+1];
+                    else
+                        regions = [regions(1:j-1); regions(j+1:end); gen_region_struct(strcat('C',num2str(j)),points(i,1), collisionsDown(1), 500 - points(i,1), collisionsUp(1)-collisionsDown(1), regions(j).neighbors)];
+                    end
                 else if(~(points(i,4)) && points(i,2)-collisionsDown(1)>0 && 500 - points(i,1)>0)
-                    regions = [regions; gen_region_struct(strcat('C',num2str(rSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), points(i,2)-collisionsDown(1), [j])];
-                    regions(j).neighbors = [regions(j).neighbors; rSize(1)+1];
+                    if(regions(j).w > 0)
+                        regions = [regions; gen_region_struct(strcat('C',num2str(rSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), points(i,2)-collisionsDown(1), [j])];
+                        regions(j).neighbors = [regions(j).neighbors; rSize(1)+1];
+                    else
+                        regions = [regions(1:j-1); regions(j+1:end); gen_region_struct(strcat('C',num2str(j)),points(i,1), collisionsDown(1), 500 - points(i,1), points(i,2)-collisionsDown(1), regions(j).neighbors)];
+                    end
                     else
                         %right side, next region been made already, just ensure neighbor setups
-                        regions(j).neighbors = [regions(j).neighbors; rSize(1)];
-                        regions(rSize(1)).neighbors = [regions(rSize(1)).neighbors; j];
+                        if(regions(j).w > 0)
+                            regions(j).neighbors = [regions(j).neighbors; rSize(1)];
+                            regions(rSize(1)).neighbors = [regions(rSize(1)).neighbors; j];
+                        else
+                            regions(rSize(1)).neighbors = regions(j).neighbors;
+                            regions(rSize(1)).name = strcat('C',num2str(j));
+                            regions = [regions(1:j-1); regions(j+1:end)];
+                        end
                     end
                 end
                 downDone = true;
@@ -233,35 +254,60 @@ for i=1:size(points)
     %special case for in line blocks, if down not done add it in
     if(~downDone && points(i,2)-collisionsDown(1)>0)
         rUpdatedSize = size(regions);
-        specialCase = rUpdatedSize
+        specialCase = rUpdatedSize(1)
         neighbors = [];
         if(points(i,4)) % if right side
+            made = 0;
              for j=1:rUpdatedSize
                 %if my bottom right point is on left edge
-                if(points(i,1) == regions(j).x)
+                if(points(i,1) == regions(j).x || points(i,1)+(points(i,2)-collisionsDown(1)) == regions(j).x)
                     if(collisionsDown(1) >= regions(j).y && collisionsDown(1) <= regions(j).y+regions(j).h)
                         neighbors = [neighbors; j];
                         regions(j).neighbors = [regions(j).neighbors; rUpdatedSize(1)+1];
                     end
                 end
-            end
-            regions = [regions; gen_region_struct(strcat('C',num2str(rUpdatedSize(1)+1)),points(i-1,1), collisionsDown(1), points(i,1) - points(i-1,1), points(i,2)-collisionsDown(1),neighbors)];
+                if(points(i,2) == regions(j).y+regions(j).h)
+                    %just modify this one instead of making one
+                    made = j;
+                end
+             end
+             if(~made)
+                regions = [regions; gen_region_struct(strcat('C',num2str(rUpdatedSize(1)+1)),points(i-1,1), collisionsDown(1), points(i,1) - points(i-1,1), points(i,2)-collisionsDown(1),neighbors)];
+             else
+                regions(made).y = collisionsDown(1);
+                regions(made).w = regions(made).w - (regions(made).x+regions(made).w - points(i,1));
+                regions(made).h = points(i,2)-collisionsDown(1);
+                regions(made).neighbors = neighbors;
+             end
         else
+             made = 0;
             for j=1:rUpdatedSize
                 %if my bottom left point is on right edge of another region + in y interval
-                if(points(i,1) == regions(j).x+regions(j).w)
+                if(points(i,1) == regions(j).x+regions(j).w || points(i,1)+(points(i,2)-collisionsDown(1)) == regions(j).x+regions(j).w)
                     if(collisionsDown(1) >= regions(j).y && collisionsDown(1) <= regions(j).y+regions(j).h)
                         neighbors = [neighbors; j];
                         regions(j).neighbors = [regions(j).neighbors; rUpdatedSize(1)+1];
                     end
                 end
+                if(points(i,2) == regions(j).y+regions(j).h)
+                    %just modify this one instead of making one
+                    made = j;
+                end
             end
-            regions = [regions; gen_region_struct(strcat('C',num2str(rUpdatedSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), points(i,2)-collisionsDown(1),neighbors)];
+            if(~made)
+                regions = [regions; gen_region_struct(strcat('C',num2str(rUpdatedSize(1)+1)),points(i,1), collisionsDown(1), 500 - points(i,1), points(i,2)-collisionsDown(1),neighbors)];
+            else
+                regions(made).y = collisionsDown(1);
+                regions(made).w = 500 - points(i,1);
+                regions(made).h = points(i,2)-collisionsDown(1);
+                regions(made).neighbors = neighbors;
+            end
         end
     end
 end
 for i=1:size(regions)
     regions(i)
+    regions(i).neighbors
     text((regions(i).x + regions(i).w/2 - 7)*div,(regions(i).y + regions(i).h/2)*div,regions(i).name);
 end
 %DFS on region tree to find solution
@@ -309,7 +355,6 @@ set(handles.feedbackText, 'String', pathString);
 %draw lines on axes to display path
 lastPoint = [tableData(1,1) tableData(2,1)];
 lastRegion = path(1);
-path
 for i=2:pFinalSize(1)
     %find overlapping segment of regions, we know there is one.
     if(regions(path(i)).x > regions(lastRegion).x)    %moving to the right using left end of next region
